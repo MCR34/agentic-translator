@@ -1,0 +1,12 @@
+{
+  "repository": "репозиторий",
+  "deployment": "развертывание",
+  "container": "контейнер",
+  "branch": "ветка",
+  "endpoint": "конечная точка",
+  "pipeline": "конвейер",
+  "middleware": "промежуточное ПО",
+  "gateway": "шлюз",
+  "framework": "фреймворк",
+  "dependency": "зависимость"
+}
