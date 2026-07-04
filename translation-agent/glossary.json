@@ -87,5 +87,16 @@
   "billing": "биллинг",
   "quota": "квота",
   "leaked key enforcement": "принудительная блокировка скомпрометированных ключей",
-  "granularity": "гранулярность"
+  "granularity": "гранулярность",
+  "installer program": "установщик",
+  "binary": "бинарный файл",
+  "virtual environment": "виртуальное окружение",
+  "package": "пакет",
+  "Python Package Index": "Python Package Index",
+  "comparator operators": "операторы сравнения",
+  "module": "модуль",
+  "command line": "командная строка",
+  "shell": "оболочка",
+  "pip": "pip",
+  "venv": "venv"
 }

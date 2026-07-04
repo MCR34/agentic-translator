@@ -346,6 +346,43 @@ def parser(ctx: Context, node_input: Any) -> Event:
 
     document_text = re.sub(r'`([^`\n]+)`', replace_inline, document_text)
 
+    # Detect "naked" CLI command lines — not wrapped in backticks in the source.
+    # A naked code line starts with a known CLI tool but is NOT followed by a verb
+    # ("is", "are", "was"...), which would indicate prose rather than a command.
+    # Consecutive such lines are grouped into a single CODE_BLOCK placeholder.
+    _NAKED_CMD = re.compile(
+        r'^(?:python3?|pip3?|npm|yarn|git|docker|kubectl|bash|sh|zsh|node|make|uv|'
+        r'curl|wget|virtualenv|venv|cargo|go)\b'
+        r'(?!\s+(?:is|are|was|were|has|have|can|will|does|do|the\s|a\s)\b)',
+        re.IGNORECASE,
+    )
+    lines = document_text.split('\n')
+    result_lines: List[str] = []
+    idx = 0
+    while idx < len(lines):
+        stripped = lines[idx].strip()
+        if _NAKED_CMD.match(stripped):
+            block: List[str] = []
+            while idx < len(lines) and (
+                _NAKED_CMD.match(lines[idx].strip())
+                # allow one blank separator inside a command group
+                or (not lines[idx].strip()
+                    and idx + 1 < len(lines)
+                    and _NAKED_CMD.match(lines[idx + 1].strip()))
+            ):
+                block.append(lines[idx])
+                idx += 1
+            while block and not block[-1].strip():
+                block.pop()
+            key = f"[CODE_BLOCK_{code_n}]"
+            protected_blocks[key] = "```\n" + "\n".join(block) + "\n```"
+            code_n += 1
+            result_lines.append(key)
+        else:
+            result_lines.append(lines[idx])
+            idx += 1
+    document_text = '\n'.join(result_lines)
+
     output = ParserOutput(document_text=document_text, protected_blocks=protected_blocks)
     return Event(
         output=output,
@@ -648,6 +685,7 @@ def reassembler(ctx: Context, node_input: Any) -> Event:
             unmatched[placeholder] = original
 
     # Second pass: fuzzy fallback when LLM shifted the index (e.g. [CODE_BLOCK_0] → [CODE_BLOCK_1])
+    still_unmatched: Dict[str, str] = {}
     for placeholder, original in unmatched.items():
         ph_match = re.match(r'\[([A-Z_]+)_\d+\]', placeholder, re.IGNORECASE)
         if ph_match:
@@ -655,6 +693,21 @@ def reassembler(ctx: Context, node_input: Any) -> Event:
             fuzzy = re.compile(r'\[' + block_type + r'_\d+\]', re.IGNORECASE)
             if fuzzy.search(final_text):
                 final_text = fuzzy.sub(lambda _, o=original: o, final_text, count=1)
+                continue
+        still_unmatched[placeholder] = original
+
+    # Third pass: universal positional fallback when LLM also changed the placeholder TYPE
+    # (e.g. [CLI_COMMAND_0] → [CODE_BLOCK_0]). Match orphaned tokens in the text to
+    # unmatched originals in document order.
+    if still_unmatched:
+        known_keys_upper = {k.upper() for k in parsed.protected_blocks}
+        universal = re.compile(r'\[[A-Z_]+_\d+\]', re.IGNORECASE)
+        orphaned = [
+            m.group(0) for m in universal.finditer(final_text)
+            if m.group(0).upper() not in known_keys_upper
+        ]
+        for orphan, original in zip(orphaned, still_unmatched.values()):
+            final_text = final_text.replace(orphan, original, 1)
 
     return Event(
         output=final_text,
