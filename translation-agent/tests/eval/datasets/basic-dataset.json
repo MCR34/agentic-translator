@@ -1,17 +1,45 @@
 {
   "eval_cases": [
     {
-      "eval_case_id": "greeting",
+      "eval_case_id": "glossary_hit_basic",
       "prompt": {
         "role": "user",
-        "parts": [{"text": "Hello, what can you help me with?"}]
+        "parts": [{"text": "Translate: Push a new container to the repository and trigger the deployment pipeline."}]
       }
     },
     {
-      "eval_case_id": "weather_query",
+      "eval_case_id": "glossary_hit_multi",
       "prompt": {
         "role": "user",
-        "parts": [{"text": "What's the weather like in San Francisco?"}]
+        "parts": [{"text": "Translate: The framework depends on a shared middleware gateway that routes requests to the correct endpoint."}]
+      }
+    },
+    {
+      "eval_case_id": "code_block_protection",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Translate: Run the following command to install dependencies:\n```\nnpm install\n```\nAfter that, check the branch status."}]
+      }
+    },
+    {
+      "eval_case_id": "inline_code_protection",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Translate: Set the `DEPLOY_ENV` variable to `production` before triggering the deployment."}]
+      }
+    },
+    {
+      "eval_case_id": "no_it_terms",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Translate: This document describes the installation process for new team members."}]
+      }
+    },
+    {
+      "eval_case_id": "mixed_content",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Translate: The container image is built from the `Dockerfile` in the repository root. Use the `docker build` command to create a local image, then push it to the remote container registry."}]
       }
     }
   ]

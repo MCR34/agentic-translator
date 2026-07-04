@@ -1,28 +1,81 @@
 metrics_to_run:
-  - custom_response_quality
+  - translation_quality
+  - code_preservation
+  - glossary_compliance
+  - agent_turn_count
 
 custom_metrics:
-  - name: custom_response_quality
+  - name: translation_quality
     prompt_template: |
-      You are an expert quality assurance evaluator for an enterprise AI assistant. Your task is to evaluate the agent's final response given the user prompt and the full agent trace (for tool-call and reasoning context).
+      You are an expert evaluator for EN→RU technical documentation translation.
+      Grade the translation quality on a scale of 1 to 5:
+      1 (Poor): Mistranslations, broken Russian grammar, or untranslated content.
+      2 (Below Average): Mostly intelligible but with notable errors or unnatural phrasing.
+      3 (Acceptable): Correct meaning, minor awkwardness in phrasing.
+      4 (Good): Accurate, natural Russian phrasing, appropriate IT register.
+      5 (Excellent): Accurate, natural, professional IT documentation style.
 
-      Please grade the response quality on a scale of 1 to 5 according to the following criteria:
-      1 (Poor): The response fails to address the query, contains incorrect information, or is highly confusing.
-      2 (Below Average): The response partially addresses the query but has notable inaccuracies, gaps, or unclear structure.
-      3 (Acceptable): The response adequately answers the query but lacks depth, clear structure, or misses minor details.
-      4 (Good): The response is accurate, well-structured, and covers the query thoroughly with minor room for improvement.
-      5 (Excellent): The response is highly relevant, comprehensive, flawlessly accurate, and excellently structured.
-
-      ### Target Evaluation:
       User Prompt: {prompt}
       Final Response: {response}
       Full Agent Trace: {agent_data}
 
-      Return your evaluation as a valid JSON object matching this structure:
+      Return valid JSON:
       {
-        "score": <integer between 1 and 5>,
-        "explanation": "<detailed string explaining the rationale for the score assigned>"
+        "score": <integer 1-5>,
+        "explanation": "<rationale>"
       }
+
+  - name: code_preservation
+    prompt_template: |
+      You are a code review evaluator. Check whether all code blocks, CLI commands,
+      and variable names from the original English text appear UNCHANGED in the
+      agent's final Russian translation output.
+
+      Score:
+      1 - Code/variable content was altered or translated.
+      5 - All code blocks, CLI commands, and variable names are preserved exactly.
+
+      User Prompt: {prompt}
+      Final Response: {response}
+
+      Return valid JSON:
+      {
+        "score": <integer 1 or 5>,
+        "explanation": "<what was preserved or what was changed>"
+      }
+
+  - name: glossary_compliance
+    prompt_template: |
+      You are a terminology compliance evaluator. The translation agent uses this glossary
+      for EN→RU IT terminology:
+      - repository → репозиторий
+      - deployment → развертывание
+      - container → контейнер
+      - branch → ветка
+      - endpoint → конечная точка
+      - pipeline → конвейер
+      - middleware → промежуточное ПО
+      - gateway → шлюз
+      - framework → фреймворк
+      - dependency → зависимость
+
+      Check whether the final Russian translation correctly applies these glossary terms
+      wherever the corresponding English terms appear in the source.
+
+      Score:
+      1 - One or more glossary terms were ignored or translated differently.
+      3 - Glossary terms partially applied.
+      5 - All applicable glossary terms used correctly.
+
+      User Prompt: {prompt}
+      Final Response: {response}
+
+      Return valid JSON:
+      {
+        "score": <integer 1, 3, or 5>,
+        "explanation": "<which terms were checked and how they were handled>"
+      }
+
   - name: agent_turn_count
     custom_function: |
       def evaluate(instance):

@@ -25,7 +25,7 @@ This agent solves that by combining deterministic preprocessing, automatic gloss
           │
           ▼
    ┌──────────────────┐
-   │ glossary_lookup  │  Matches known IT terms from glossary.json (~77 terms)
+   │ glossary_lookup  │  Matches known IT terms from glossary.json (~80 terms)
    └──────┬───────────┘
           │
           ▼
@@ -120,7 +120,7 @@ This agent solves that by combining deterministic preprocessing, automatic gloss
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/MCR34/agentic-translator.git
 cd agentic-translator/translation-agent
 uv sync
 ```
@@ -171,16 +171,18 @@ docker run -p 8000:8000 -e GEMINI_API_KEY=your_key it-translator
 ## Project Structure
 
 ```
-translation-agent/
-├── app/
-│   ├── agent.py          # All 10 workflow nodes + LlmAgents + helpers
-│   ├── config.py         # MODEL_NAME, GLOSSARY_PATH constants
-│   └── app_utils/        # Telemetry and typing helpers
-├── glossary.json         # Auto-growing IT term dictionary (EN→RU)
-├── output.html           # Generated on each translation (gitignored)
-├── Dockerfile
-├── pyproject.toml
-└── tests/
+agentic-translator/
+├── README.md
+├── KAGGLE_WRITEUP.md
+└── translation-agent/
+    ├── app/
+    │   ├── agent.py          # All 10 workflow nodes + LlmAgents + helpers
+    │   ├── config.py         # MODEL_NAME, GLOSSARY_PATH constants
+    │   └── app_utils/        # Telemetry and typing helpers
+    ├── glossary.json         # Auto-growing IT term dictionary (EN→RU)
+    ├── Dockerfile
+    ├── pyproject.toml
+    └── tests/
 ```
 
 ---
